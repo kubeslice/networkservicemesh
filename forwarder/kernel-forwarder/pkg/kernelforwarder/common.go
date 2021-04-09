@@ -29,13 +29,18 @@ import (
 	"github.com/networkservicemesh/networkservicemesh/utils/fs"
 )
 
+type route struct {
+	routes  []*connectioncontext.Route
+	nextHop string
+}
+
 // LinkData instance
 type LinkData struct {
 	nsHandle  netns.NsHandle // Desired namespace handler
 	name      string
 	tempName  string // Used in case src and dst name are the same causing the VETH creation to fail
 	ip        string
-	routes    []*connectioncontext.Route
+	routes    []route
 	neighbors []*connectioncontext.IpNeighbor
 }
 
@@ -45,13 +50,17 @@ func SetupInterface(ifaceName, tempName string, conn *connection.Connection, isD
 	link := &LinkData{name: ifaceName, tempName: tempName}
 	netNsInode := conn.GetMechanism().GetParameters()[common.NetNsInodeKey]
 	link.neighbors = conn.GetContext().GetIpContext().GetIpNeighbors()
+	installRoute := route{}
 	if isDst {
 		link.ip = conn.GetContext().GetIpContext().GetDstIpAddr()
-		link.routes = conn.GetContext().GetIpContext().GetSrcRoutes()
+		installRoute.routes = conn.GetContext().GetIpContext().GetSrcRoutes()
+		installRoute.nextHop = conn.GetContext().GetIpContext().GetSrcIpAddr()
 	} else {
 		link.ip = conn.GetContext().GetIpContext().GetSrcIpAddr()
-		link.routes = conn.GetContext().GetIpContext().GetDstRoutes()
+		installRoute.routes = conn.GetContext().GetIpContext().GetDstRoutes()
+		installRoute.nextHop = conn.GetContext().GetIpContext().GetDstIpAddr()
 	}
+	link.routes = append(link.routes, installRoute)
 
 	/* Get namespace handler - source */
 	link.nsHandle, err = fs.GetNsHandleFromInode(netNsInode)
@@ -219,24 +228,28 @@ func setupLink(l netlink.Link, link *LinkData) error {
 }
 
 // addRoutes adds routes
-func addRoutes(link netlink.Link, addr *netlink.Addr, routes []*connectioncontext.Route) error {
+func addRoutes(link netlink.Link, addr *netlink.Addr, routes []route) error {
 	for _, route := range routes {
-		_, routeNet, err := net.ParseCIDR(route.GetPrefix())
-		if err != nil {
-			logrus.Error("common: failed parsing route CIDR:", err)
-			return err
-		}
-		route := netlink.Route{
-			LinkIndex: link.Attrs().Index,
-			Dst: &net.IPNet{
-				IP:   routeNet.IP,
-				Mask: routeNet.Mask,
-			},
-			Src: addr.IP,
-		}
-		if err = netlink.RouteAdd(&route); err != nil {
-			logrus.Error("common: failed adding routes:", err)
-			return err
+		for _, installRoute := range route.routes {
+			_, routeNet, err := net.ParseCIDR(installRoute.GetPrefix())
+			nextHop := route.nextHop
+			nextHopIp, _ := netlink.ParseAddr(nextHop)
+			if err != nil {
+				logrus.Error("common: failed parsing route CIDR:", err)
+				return err
+			}
+			route := netlink.Route{
+				LinkIndex: link.Attrs().Index,
+				Dst: &net.IPNet{
+					IP:   routeNet.IP,
+					Mask: routeNet.Mask,
+				},
+				Gw: nextHopIp.IP,
+			}
+			if err = netlink.RouteAdd(&route); err != nil {
+				logrus.Error("common: failed adding routes:", err)
+				return err
+			}
 		}
 	}
 	return nil
