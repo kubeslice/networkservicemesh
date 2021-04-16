@@ -54,8 +54,11 @@ replace (
 
 require (
 	github.com/alessio/shellescape v1.2.2 // indirect
+	github.com/networkservicemesh/networkservicemesh/utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/cobra v1.0.0 // indirect
+	github.com/vishvananda/netlink v1.1.0 // indirect
+	github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 	k8s.io/apimachinery v0.18.2 // indirect
