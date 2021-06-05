@@ -39,6 +39,7 @@ type LinkData struct {
 	nsHandle  netns.NsHandle // Desired namespace handler
 	name      string
 	tempName  string // Used in case src and dst name are the same causing the VETH creation to fail
+	alias     string
 	ip        string
 	routes    []route
 	neighbors []*connectioncontext.IpNeighbor
@@ -61,6 +62,7 @@ func SetupInterface(ifaceName, tempName string, conn *connection.Connection, isD
 		installRoute.nextHop = conn.GetContext().GetIpContext().GetDstIpAddr()
 	}
 	link.routes = append(link.routes, installRoute)
+	link.alias = conn.GetLabels()["podName"]
 
 	/* Get namespace handler - source */
 	link.nsHandle, err = fs.GetNsHandleFromInode(netNsInode)
@@ -124,6 +126,15 @@ func setupLinkInNs(link *LinkData, inject bool) error {
 			logrus.Errorf("common: failed to get link for %q - %v", link.name, err)
 			return err
 		}
+		/* Set alias for the interface */
+		if link.alias != "" {
+			if err = netlink.LinkSetAlias(ifaceLink, link.alias); err != nil {
+				logrus.Errorf("common: failed to set alias to the interface: %v, alias: %v - %v", link.name, link.alias, err)
+				return err
+			}
+		}
+
+	        logrus.Debug("common: interface alias: ", link.alias)
 		/* Inject the interface into the desired namespace */
 		if err = netlink.LinkSetNsFd(ifaceLink, int(link.nsHandle)); err != nil {
 			logrus.Errorf("common: failed to inject %q in namespace - %v", link.name, err)
