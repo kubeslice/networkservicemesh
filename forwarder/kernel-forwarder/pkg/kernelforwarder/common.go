@@ -22,6 +22,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netns"
+	"github.com/mpvl/unique"
 
 	"github.com/networkservicemesh/networkservicemesh/controlplane/api/connection"
 	"github.com/networkservicemesh/networkservicemesh/controlplane/api/connection/mechanisms/common"
@@ -29,7 +30,7 @@ import (
 	"github.com/networkservicemesh/networkservicemesh/utils/fs"
 )
 
-type route struct {
+type linkRoutes struct {
 	routes  []*connectioncontext.Route
 	nextHop string
 }
@@ -41,7 +42,7 @@ type LinkData struct {
 	tempName  string // Used in case src and dst name are the same causing the VETH creation to fail
 	alias     string
 	ip        string
-	routes    []route
+	routes    linkRoutes
 	neighbors []*connectioncontext.IpNeighbor
 }
 
@@ -51,17 +52,18 @@ func SetupInterface(ifaceName, tempName string, conn *connection.Connection, isD
 	link := &LinkData{name: ifaceName, tempName: tempName}
 	netNsInode := conn.GetMechanism().GetParameters()[common.NetNsInodeKey]
 	link.neighbors = conn.GetContext().GetIpContext().GetIpNeighbors()
-	installRoute := route{}
+	installRoutes := linkRoutes{}
 	if isDst {
 		link.ip = conn.GetContext().GetIpContext().GetDstIpAddr()
-		installRoute.routes = conn.GetContext().GetIpContext().GetSrcRoutes()
-		installRoute.nextHop = conn.GetContext().GetIpContext().GetSrcIpAddr()
+		installRoutes.routes = conn.GetContext().GetIpContext().GetSrcRoutes()
+		installRoutes.nextHop = conn.GetContext().GetIpContext().GetSrcIpAddr()
 	} else {
 		link.ip = conn.GetContext().GetIpContext().GetSrcIpAddr()
-		installRoute.routes = conn.GetContext().GetIpContext().GetDstRoutes()
-		installRoute.nextHop = conn.GetContext().GetIpContext().GetDstIpAddr()
+		installRoutes.routes = conn.GetContext().GetIpContext().GetDstRoutes()
+		installRoutes.nextHop = conn.GetContext().GetIpContext().GetDstIpAddr()
 	}
-	link.routes = append(link.routes, installRoute)
+
+	link.routes = installRoutes
 	link.alias = conn.GetLabels()["podName"]
 
 	/* Get namespace handler - source */
@@ -94,6 +96,10 @@ func ClearInterfaceSetup(ifaceName string, conn *connection.Connection) (string,
 	link := &LinkData{name: ifaceName}
 	netNsInode := conn.GetMechanism().GetParameters()[common.NetNsInodeKey]
 	link.ip = conn.GetContext().GetIpContext().GetSrcIpAddr()
+
+	delRoutes := linkRoutes{}
+	delRoutes.routes = conn.GetContext().GetIpContext().GetDstRoutes()
+	link.routes = delRoutes
 
 	/* Get namespace handler - source */
 	link.nsHandle, err = fs.GetNsHandleFromInode(netNsInode)
@@ -134,7 +140,7 @@ func setupLinkInNs(link *LinkData, inject bool) error {
 			}
 		}
 
-	        logrus.Debug("common: interface alias: ", link.alias)
+		logrus.Debug("common: interface alias: ", link.alias)
 		/* Inject the interface into the desired namespace */
 		if err = netlink.LinkSetNsFd(ifaceLink, int(link.nsHandle)); err != nil {
 			logrus.Errorf("common: failed to inject %q in namespace - %v", link.name, err)
@@ -182,6 +188,10 @@ func setupLinkInNs(link *LinkData, inject bool) error {
 			return err
 		}
 	} else {
+		/* Delete routes */
+		if err = deleteRoutes(l, link.routes); err != nil {
+			logrus.Error("common: failed deleting routes:", err)
+		}
 		/* Bring the interface DOWN */
 		if err = netlink.LinkSetDown(l); err != nil {
 			logrus.Errorf("common: failed to bring %q down: %v", link.name, err)
@@ -239,30 +249,73 @@ func setupLink(l netlink.Link, link *LinkData) error {
 }
 
 // addRoutes adds routes
-func addRoutes(link netlink.Link, addr *netlink.Addr, routes []route) error {
-	for _, route := range routes {
-		for _, installRoute := range route.routes {
-			_, routeNet, err := net.ParseCIDR(installRoute.GetPrefix())
-			nextHop := route.nextHop
-			nextHopIp, _ := netlink.ParseAddr(nextHop)
-			if err != nil {
-				logrus.Error("common: failed parsing route CIDR:", err)
-				return err
-			}
-			route := netlink.Route{
-				LinkIndex: link.Attrs().Index,
-				Dst: &net.IPNet{
-					IP:   routeNet.IP,
-					Mask: routeNet.Mask,
-				},
-				Gw: nextHopIp.IP,
-			}
-			if err = netlink.RouteAdd(&route); err != nil {
-				logrus.Error("common: failed adding routes:", err)
-				return err
-			}
+func addRoutes(link netlink.Link, addr *netlink.Addr, lroutes linkRoutes) error {
+	prefixList := []string{}
+	for _, installRoute := range lroutes.routes {
+		prefixList = append(prefixList, installRoute.GetPrefix())
+	}
+	unique.Strings(&prefixList)
+	nextHop := lroutes.nextHop
+
+	for _, prefix := range prefixList {
+		_, routeNet, err := net.ParseCIDR(prefix)
+		nextHopIp, _ := netlink.ParseAddr(nextHop)
+		if err != nil {
+			logrus.Error("common: failed parsing route CIDR:", err)
+			return err
+		}
+		route := netlink.Route{
+			LinkIndex: link.Attrs().Index,
+			Dst: &net.IPNet{
+				IP:   routeNet.IP,
+				Mask: routeNet.Mask,
+			},
+			Gw: nextHopIp.IP,
+		}
+		if err = netlink.RouteAdd(&route); err != nil {
+			logrus.Error("common: failed adding routes:", err)
+			return err
 		}
 	}
+
+	return nil
+}
+
+// deleteRoutes deletes routes
+func deleteRoutes(link netlink.Link, lroutes linkRoutes) error {
+	installedRoutes, err := netlink.RouteList(link, netlink.FAMILY_V4)
+	if err != nil {
+		return err
+	}
+
+	routeMap := make(map[string][]netlink.Route)
+	for _, installedRoute := range installedRoutes {
+		logrus.Infof("common: route %v", installedRoute)
+		routeMap[installedRoute.Dst.String()] = append(routeMap[installedRoute.Dst.String()], installedRoute)
+	}
+
+	prefixList := []string{}
+	for _, delRoute := range lroutes.routes {
+		prefixList = append(prefixList, delRoute.GetPrefix())
+	}
+	unique.Strings(&prefixList)
+
+	for _, prefix := range prefixList {
+		_, ok := routeMap[prefix]
+		if !ok {
+			logrus.Infof("common: prefix %v not present in routing table. Ignoring..", prefix)
+			continue
+		}
+		for _, r := range routeMap[prefix] {
+			err := netlink.RouteDel(&r)
+			if err != nil {
+				logrus.Errorf("common: failed to delete route: %v, err: %v", r, err)
+				return err
+			}
+			logrus.Infof("Route deleted: %v", r)
+		}
+	}
+
 	return nil
 }
 
