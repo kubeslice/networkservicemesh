@@ -20,12 +20,16 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
+	"github.com/vishvananda/netns"
+
 
 	"github.com/networkservicemesh/networkservicemesh/controlplane/api/connection"
 	common2 "github.com/networkservicemesh/networkservicemesh/controlplane/api/connection/mechanisms/common"
 	"github.com/networkservicemesh/networkservicemesh/controlplane/api/crossconnect"
 	. "github.com/networkservicemesh/networkservicemesh/forwarder/kernel-forwarder/pkg/kernelforwarder/remote"
 	"github.com/networkservicemesh/networkservicemesh/forwarder/kernel-forwarder/pkg/monitoring"
+	"github.com/networkservicemesh/networkservicemesh/utils/fs"
 )
 
 // handleRemoteConnection handles remote connect/disconnect requests for either incoming or outgoing connections
@@ -66,6 +70,54 @@ func (k *KernelForwarder) handleConnection(connID string, localConnection, remot
 	return devices, err
 }
 
+func (k *KernelForwarder) findRemoteConnection(conn *connection.Connection) (bool, error) {
+        hostNs, err := netns.Get()
+        if err != nil {
+                logrus.Errorf("find_remote: failed getting host namespace: %v", err)
+                return false, err
+        }
+        defer func() {
+                if err = hostNs.Close(); err != nil {
+                        logrus.Error("find_remote: failed closing host namespace handle: ", err)
+                }
+                logrus.Debug("find_remote: closed host namespace handle: ", hostNs)
+        }()
+        /* Don't forget to switch back to the host namespace */
+        defer func() {
+                if err = netns.Set(hostNs); err != nil {
+                        logrus.Errorf("find_remote: failed switching back to host namespace: %v", err)
+                }
+        }()
+
+        netNsInode := conn.GetMechanism().GetParameters()[common2.NetNsInodeKey]
+        //ifaceName := conn.GetMechanism().GetParameters()[common2.InterfaceNameKey]
+        netNsHandle, err := fs.GetNsHandleFromInode(netNsInode)
+        if err != nil {
+                logrus.Errorf("find_remote: failed to get source namespace handle - %v", err)
+                return false, nil
+        }
+        defer func() {
+                if err = netNsHandle.Close(); err != nil {
+                        logrus.Errorf("find_remote: error when closing source namespace handle: %v", err)
+                }
+        }()
+
+        if err = netns.Set(netNsHandle); err != nil {
+                logrus.Errorf("find_remote: failed switching to source namespace: %v", err)
+                return false, err
+        }
+
+        links, err := netlink.LinkList()
+        for _, link := range links {
+		logrus.Infof("find_remote: link info: type: %v, attr: %v", link.Type(), link.Attrs())
+                //if link.Type() == "veth" && link.Attrs().Name == srcName {
+                //        return true, nil
+                //}
+        }
+
+        return false, nil
+}
+
 // createRemoteConnection handler for creating a remote connection
 func (k *KernelForwarder) createRemoteConnection(connID string, localConnection, remoteConnection *connection.Connection, direction uint8) (map[string]monitoring.Device, error) {
 	logrus.Info("remote: creating connection...")
@@ -79,6 +131,10 @@ func (k *KernelForwarder) createRemoteConnection(connID string, localConnection,
 	ifaceName := localConnection.GetMechanism().GetParameters()[common2.InterfaceNameKey]
 	var nsInode string
 	var err error
+
+	foundConn, _ := k.findRemoteConnection(localConnection)
+	if foundConn {
+	}
 
 	/* Lock the OS thread so we don't accidentally switch namespaces */
 	runtime.LockOSThread()
