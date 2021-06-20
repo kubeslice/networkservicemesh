@@ -90,7 +90,7 @@ func (k *KernelForwarder) findRemoteConnection(conn *connection.Connection) (boo
         }()
 
         netNsInode := conn.GetMechanism().GetParameters()[common2.NetNsInodeKey]
-        //ifaceName := conn.GetMechanism().GetParameters()[common2.InterfaceNameKey]
+        ifaceName := conn.GetMechanism().GetParameters()[common2.InterfaceNameKey]
         netNsHandle, err := fs.GetNsHandleFromInode(netNsInode)
         if err != nil {
                 logrus.Errorf("find_remote: failed to get source namespace handle - %v", err)
@@ -110,9 +110,9 @@ func (k *KernelForwarder) findRemoteConnection(conn *connection.Connection) (boo
         links, err := netlink.LinkList()
         for _, link := range links {
 		logrus.Infof("find_remote: link info: type: %v, attr: %v", link.Type(), link.Attrs())
-                //if link.Type() == "veth" && link.Attrs().Name == srcName {
-                //        return true, nil
-                //}
+                if link.Attrs().Name == ifaceName {
+                        return true, nil
+                }
         }
 
         return false, nil
@@ -132,13 +132,27 @@ func (k *KernelForwarder) createRemoteConnection(connID string, localConnection,
 	var nsInode string
 	var err error
 
-	foundConn, _ := k.findRemoteConnection(localConnection)
-	if foundConn {
-	}
-
 	/* Lock the OS thread so we don't accidentally switch namespaces */
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+
+        foundConn, err := k.findRemoteConnection(localConnection)
+	if err != nil {
+		return nil, err
+	}
+	if foundConn {
+		logrus.Infof("remote: connection already exists. deleting... %v", localConnection)
+                _, err := ClearInterfaceSetup(ifaceName, localConnection)
+                if err != nil {
+                        logrus.Errorf("remote: failed to clear intf: %v", err)
+                        return nil, err
+                }
+                err = k.remoteConnect.DeleteInterface(ifaceName, remoteConnection)
+                if err != nil {
+                        logrus.Errorf("remote: failed to delete intf in host: %v", err)
+                        return nil, err
+                }
+	}
 
 	if err = k.remoteConnect.CreateInterface(ifaceName, remoteConnection, direction); err != nil {
 		logrus.Errorf("remote: %v", err)

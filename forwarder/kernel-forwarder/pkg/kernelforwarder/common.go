@@ -190,7 +190,7 @@ func setupLinkInNs(link *LinkData, inject bool) error {
 	} else {
 		/* Delete routes */
 		if err = deleteRoutes(l, link.routes); err != nil {
-			logrus.Error("common: failed deleting routes:", err)
+			logrus.Errorf("common: failed deleting routes:", err)
 		}
 		/* Bring the interface DOWN */
 		if err = netlink.LinkSetDown(l); err != nil {
@@ -290,7 +290,6 @@ func deleteRoutes(link netlink.Link, lroutes linkRoutes) error {
 
 	routeMap := make(map[string][]netlink.Route)
 	for _, installedRoute := range installedRoutes {
-		logrus.Infof("common: route %v", installedRoute)
 		routeMap[installedRoute.Dst.String()] = append(routeMap[installedRoute.Dst.String()], installedRoute)
 	}
 

@@ -63,14 +63,14 @@ func (k *KernelForwarder) findLocalSrcConnection(crossConnect *crossconnect.Cros
 	}
 	defer func() {
 		if err = hostNs.Close(); err != nil {
-			logrus.Error("common: failed closing host namespace handle: ", err)
+			logrus.Errorf("find_local: failed closing host namespace handle: ", err)
 		}
-		logrus.Debug("common: closed host namespace handle: ", hostNs)
+		logrus.Debug("find_local: closed host namespace handle: ", hostNs)
 	}()
 	/* Don't forget to switch back to the host namespace */
 	defer func() {
 		if err = netns.Set(hostNs); err != nil {
-			logrus.Errorf("common: failed switching back to host namespace: %v", err)
+			logrus.Errorf("find_local: failed switching back to host namespace: %v", err)
 		}
 	}()
 
