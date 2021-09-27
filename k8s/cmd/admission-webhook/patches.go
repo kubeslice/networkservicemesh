@@ -122,7 +122,9 @@ func createNsmInitContainerPatch(target []corev1.Container, annotationValue stri
 				Value: jaegerPort,
 			})
 	}
+
 	var value interface{}
+	var privileged bool = true
 	nsmInitContainer := corev1.Container{
 		Name:            initContainerName,
 		Image:           fmt.Sprintf("%s/%s:%s", getRepo(), getInitContainer(), getTag()),
@@ -132,6 +134,9 @@ func createNsmInitContainerPatch(target []corev1.Container, annotationValue stri
 			Limits: corev1.ResourceList{
 				"networkservicemesh.io/socket": resource.MustParse("1"),
 			},
+		},
+		SecurityContext: &corev1.SecurityContext{
+			Privileged: &privileged,
 		},
 	}
 	dnsNsmInitContainer := corev1.Container{
