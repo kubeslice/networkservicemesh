@@ -15,6 +15,8 @@ import (
 	"github.com/networkservicemesh/networkservicemesh/controlplane/pkg/nsmd"
 
 	"github.com/networkservicemesh/networkservicemesh/controlplane/api/registry"
+
+	"github.com/pkg/errors"
 )
 
 // Default values and environment variables of proxy connection
@@ -71,18 +73,25 @@ func FindNetworkServiceWithCache(cache RegistryCache, networkServiceName string)
 	t1 := time.Now()
 	endpointList := cache.GetEndpointsByNs(networkServiceName)
 	logrus.Infof("NSE found %d, retrieve time: %v", len(endpointList), time.Since(t1))
-	NSEs := make([]*registry.NetworkServiceEndpoint, len(endpointList))
+	NSEs := []*registry.NetworkServiceEndpoint{}
 
 	NSMs := make(map[string]*registry.NetworkServiceManager)
 	endpointIds := []string{}
-	for i, endpoint := range endpointList {
-		NSEs[i] = mapNseFromCustomResource(endpoint)
-		endpointIds = append(endpointIds, NSEs[i].GetName())
+	for _, endpoint := range endpointList {
+		// Verify the presence of the network service manager referenced
+		// by the endpoint.
 		nsm, err := cache.GetNetworkServiceManager(endpoint.Spec.NsmName)
 		if err != nil {
-			return nil, err
+			logrus.Errorf("Network service manager %v not found for the NSE. Err: %v", endpoint.Spec.NsmName, err)
+			continue
 		}
 		NSMs[endpoint.Spec.NsmName] = mapNsmFromCustomResource(nsm)
+		NSEs = append(NSEs, mapNseFromCustomResource(endpoint))
+		endpointIds = append(endpointIds, mapNseFromCustomResource(endpoint).GetName())
+	}
+
+	if len(endpointIds) == 0 {
+		return nil, errors.Errorf("No valid endpoints found for the network service :%v", networkServiceName)
 	}
 
 	var matches []*registry.Match
