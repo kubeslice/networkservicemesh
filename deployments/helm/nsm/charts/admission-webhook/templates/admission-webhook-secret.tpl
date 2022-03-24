@@ -87,7 +87,7 @@ spec:
   selector:
     app: nsm-admission-webhook
 ---
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: nsm-admission-webhook-cfg

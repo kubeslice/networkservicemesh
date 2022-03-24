@@ -10,10 +10,11 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/admission/v1beta1"
+	v1 "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	qosv1 "k8s.io/kubernetes/pkg/apis/core/v1/helper/qos"
 
 	"github.com/networkservicemesh/networkservicemesh/pkg/tools"
@@ -40,7 +41,7 @@ func defaultDNSSearchDomains() []string {
 	return []string{fmt.Sprintf("%v.svc.cluster.local", namespace.GetNamespace()), "svc.cluster.local", "cluster.local"}
 }
 
-func getMetaAndSpec(request *v1beta1.AdmissionRequest) (*podSpecAndMeta, error) {
+func getMetaAndSpec(request *v1.AdmissionRequest) (*podSpecAndMeta, error) {
 	result := &podSpecAndMeta{}
 	if request.Kind.Kind == deployment {
 		var deployment appsv1.Deployment
@@ -78,7 +79,7 @@ func checkNsmInitContainerDuplication(spec *corev1.PodSpec) error {
 	return nil
 }
 
-func isSupportKind(request *v1beta1.AdmissionRequest) bool {
+func isSupportKind(request *v1.AdmissionRequest) bool {
 	return request.Kind.Kind == pod || request.Kind.Kind == deployment
 }
 
@@ -101,12 +102,13 @@ func getNsmAnnotationValue(ignoredNamespaceList []string, tuple *podSpecAndMeta)
 	return value, ok
 }
 
-func parseAdmissionReview(body []byte) (*v1beta1.AdmissionReview, error) {
-	r := &v1beta1.AdmissionReview{}
-	if _, _, err := deserializer.Decode(body, nil, r); err != nil {
-		return nil, err
+func parseAdmissionReview(body []byte) (*v1.AdmissionReview, *schema.GroupVersionKind, error) {
+	r := &v1.AdmissionReview{}
+	_, gvk, err := deserializer.Decode(body, nil, r)
+	if err != nil {
+		return nil, gvk, err
 	}
-	return r, nil
+	return r, gvk, nil
 }
 
 func readRequest(r *http.Request) ([]byte, error) {

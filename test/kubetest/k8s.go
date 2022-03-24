@@ -23,7 +23,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
-	arv1beta1 "k8s.io/api/admissionregistration/v1beta1"
+	arv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1254,7 +1254,7 @@ func (k8s *K8s) CleanupDeployments() {
 }
 
 // CreateMutatingWebhookConfiguration creates mutating webhook with configuration
-func (k8s *K8s) CreateMutatingWebhookConfiguration(mutatingWebhookConf *arv1beta1.MutatingWebhookConfiguration) (*arv1beta1.MutatingWebhookConfiguration, error) {
+func (k8s *K8s) CreateMutatingWebhookConfiguration(mutatingWebhookConf *arv1.MutatingWebhookConfiguration) (*arv1.MutatingWebhookConfiguration, error) {
 	awc, err := k8s.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(context.TODO(), mutatingWebhookConf, metaV1.CreateOptions{})
 	if err != nil {
 		logrus.Errorf("Error creating MutatingWebhookConfiguration: %v %v", awc, err)
@@ -1264,7 +1264,7 @@ func (k8s *K8s) CreateMutatingWebhookConfiguration(mutatingWebhookConf *arv1beta
 }
 
 // DeleteMutatingWebhookConfiguration deletes mutating webhook with configuration
-func (k8s *K8s) DeleteMutatingWebhookConfiguration(mutatingWebhookConf *arv1beta1.MutatingWebhookConfiguration) error {
+func (k8s *K8s) DeleteMutatingWebhookConfiguration(mutatingWebhookConf *arv1.MutatingWebhookConfiguration) error {
 	return k8s.clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Delete(context.TODO(), mutatingWebhookConf.GetName(), metaV1.DeleteOptions{})
 }
 

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/admission/v1beta1"
+	v1 "k8s.io/api/admission/v1"
 )
 
-func (s *nsmAdmissionWebhook) mutate(request *v1beta1.AdmissionRequest) *v1beta1.AdmissionResponse {
+func (s *nsmAdmissionWebhook) mutate(request *v1.AdmissionRequest) *v1.AdmissionResponse {
 	logrus.Infof("AdmissionReview for =%v", request)
 	if !isSupportKind(request) {
 		return okReviewResponse()

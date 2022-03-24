@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/admission/v1beta1"
+	v1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,10 +19,10 @@ func (s *nsmAdmissionWebhook) serve(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	requestReview, err := parseAdmissionReview(body)
-	nsmAdmissionWebhookReview := v1beta1.AdmissionReview{}
+	requestReview, gvk, err := parseAdmissionReview(body)
+	nsmAdmissionWebhookReview := v1.AdmissionReview{}
 	if err != nil {
-		nsmAdmissionWebhookReview.Response = &v1beta1.AdmissionResponse{
+		nsmAdmissionWebhookReview.Response = &v1.AdmissionResponse{
 			Result: &metav1.Status{
 				Message: err.Error(),
 			},
@@ -33,6 +33,7 @@ func (s *nsmAdmissionWebhook) serve(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	nsmAdmissionWebhookReview.Response.UID = requestReview.Request.UID
+	nsmAdmissionWebhookReview.SetGroupVersionKind(*gvk)
 	resp, err := json.Marshal(nsmAdmissionWebhookReview)
 	if err != nil {
 		logrus.Errorf("Can't encode response: %v", err)
