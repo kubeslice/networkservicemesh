@@ -56,16 +56,32 @@ func main() {
 	<-c
 }
 
-func getRepo() string {
-	repo := os.Getenv(repoEnv)
+func getInitContainerRepo() string {
+	repo := os.Getenv(initContainerRepoEnv)
 	if repo == "" {
 		repo = repoDefault
 	}
 	return repo
 }
 
-func getTag() string {
-	tag := os.Getenv(tagEnv)
+func getInitContainerTag() string {
+	tag := os.Getenv(initContainerTagEnv)
+	if tag == "" {
+		tag = tagDefault
+	}
+	return tag
+}
+
+func getDnsSidecarRepo() string {
+	repo := os.Getenv(dnsSidecarContainerRepoEnv)
+	if repo == "" {
+		repo = repoDefault
+	}
+	return repo
+}
+
+func getDnsSidecarTag() string {
+	tag := os.Getenv(dnsSidecarTagEnv)
 	if tag == "" {
 		tag = tagDefault
 	}
