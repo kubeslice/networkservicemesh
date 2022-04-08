@@ -20,7 +20,7 @@ func createDNSPatch(tuple *podSpecAndMeta, annotationValue string, imposeLimits 
 	nsmDNSMonitorContainer := corev1.Container{
 		Name:            "nsm-dns-monitor",
 		Command:         []string{"/bin/nsm-monitor"},
-		Image:           fmt.Sprintf("%s/%s:%s", getRepo(), "nsm-monitor", getTag()),
+		Image:           fmt.Sprintf("%s/%s:%s", getDnsSidecarRepo(), dnsMonitorSidecarContainerDefault, getDnsSidecarTag()),
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Env: []corev1.EnvVar{
 			{
@@ -46,7 +46,7 @@ func createDNSPatch(tuple *podSpecAndMeta, annotationValue string, imposeLimits 
 
 	corednsContainer := corev1.Container{
 		Name:            "coredns",
-		Image:           "networkservicemesh/coredns:master",
+		Image:           fmt.Sprintf("%s/%s:%s", getDnsSidecarRepo(), dnsSidecarContainerDefault, getDnsSidecarTag()),
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Args:            []string{"-conf", "/etc/coredns/Corefile"},
 		VolumeMounts: []corev1.VolumeMount{{
@@ -127,7 +127,7 @@ func createNsmInitContainerPatch(target []corev1.Container, annotationValue stri
 	var privileged bool = true
 	nsmInitContainer := corev1.Container{
 		Name:            initContainerName,
-		Image:           fmt.Sprintf("%s/%s:%s", getRepo(), getInitContainer(), getTag()),
+		Image:           fmt.Sprintf("%s/%s:%s", getInitContainerRepo(), getInitContainer(), getInitContainerTag()),
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Env:             envVals,
 		Resources: corev1.ResourceRequirements{
@@ -141,7 +141,7 @@ func createNsmInitContainerPatch(target []corev1.Container, annotationValue stri
 	}
 	dnsNsmInitContainer := corev1.Container{
 		Name:            dnsInitContainerDefault,
-		Image:           fmt.Sprintf("%s/%s:%s", getRepo(), dnsInitContainerDefault, getTag()),
+		Image:           fmt.Sprintf("%s/%s:%s", getInitContainerRepo(), dnsInitContainerDefault, getInitContainerTag()),
 		ImagePullPolicy: corev1.PullIfNotPresent,
 		Env:             envVals,
 		Resources: corev1.ResourceRequirements{
