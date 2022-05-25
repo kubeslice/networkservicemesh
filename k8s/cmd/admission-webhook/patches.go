@@ -17,6 +17,7 @@ type patchOperation struct {
 
 func createDNSPatch(tuple *podSpecAndMeta, annotationValue string, imposeLimits bool) (patch []patchOperation) {
 	// TODO: now order of containers is important since nsmdp assign proper workspace only to the first container
+	var privileged bool = true
 	nsmDNSMonitorContainer := corev1.Container{
 		Name:            "nsm-dns-monitor",
 		Command:         []string{"/bin/nsm-monitor"},
@@ -32,6 +33,9 @@ func createDNSPatch(tuple *podSpecAndMeta, annotationValue string, imposeLimits 
 				Value: annotationValue,
 			},
 		},
+		SecurityContext: &corev1.SecurityContext{
+                        Privileged: &privileged,
+                },
 		VolumeMounts: []corev1.VolumeMount{{
 			ReadOnly:  false,
 			Name:      "nsm-coredns-volume",
