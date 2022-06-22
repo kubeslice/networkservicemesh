@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"strings"
 	"syscall"
 	"unicode"
 
@@ -58,9 +57,7 @@ func ResolvePodNsByInode(inode uint64) (string, error) {
 			if tryInode == inode {
 				cmdFound, _ := GetCmdline(name)
 				logrus.Infof("Found a pod attached to the inode: %v", cmdFound)
-				if cmdline, err := GetCmdline(name); err == nil && (strings.Contains(cmdline, "pause") || strings.Contains(cmdline, "pod")) {
-					return filename, nil
-				}
+				return filename, nil
 			}
 		}
 	}
