@@ -28,48 +28,6 @@ If you want a more extensive look, you can follow the slightly more detailed [Bu
 
 See our full documentation at the [docs](/docs/README.md) folder.
 
-## Get involved
-
-* Weekly meetings
-  * [PR Review - Weekly Zoom meeting](https://docs.google.com/document/d/1C9NKjo0PWNWypROEO9-Y6haw5h9Xmurvl14SXpciz2Y/edit#heading=h.m0os04xwq7am) - every Tuesday at 7:30 - 8:00 AM PT
-  * [General - Weekly Zoom meeting](https://docs.google.com/document/d/1C9NKjo0PWNWypROEO9-Y6haw5h9Xmurvl14SXpciz2Y/edit#heading=h.almmgb8eh15x) - every Tuesday at 8:00 - 9:00 AM PT
-  * [General - Biweekly Zoom meeting](https://docs.google.com/document/d/1C9NKjo0PWNWypROEO9-Y6haw5h9Xmurvl14SXpciz2Y/edit#heading=h.almmgb8eh15x) - every other Tuesday at 10:00 - 11:00 AM CET
-  * [General - Meeting minutes](https://docs.google.com/document/d/1C9NKjo0PWNWypROEO9-Y6haw5h9Xmurvl14SXpciz2Y/edit#heading=h.rc9df0a6n3ng)
-  * [Calendar](https://calendar.google.com/calendar/embed?src=iae5pl3qbf2g5ehm6jb2h7gv08%40group.calendar.google.com&ctz=America%2FLos_Angeles)
-  * [Recordings](https://www.youtube.com/playlist?list=PLj6h78yzYM2Ob01WuF-mqMxd8a_wAuppb)
-
-* Channels
- * [![Slack Channel](https://img.shields.io/badge/Slack:-%23nsm%20on%20CNCF%20Slack-blue.svg?style=plastic&logo=slack)](https://cloud-native.slack.com/messages/CHQNNUPN1/)
- * [![Slack Channel](https://img.shields.io/badge/Slack:-%23nsm--dev%20on%20CNCF%20Slack-blue.svg?style=plastic&logo=slack)](https://cloud-native.slack.com/messages/CHSKJ4849/)
- * [![Slack Invite](https://img.shields.io/badge/Slack-CNCF%20Slack%20Invite-blue.svg?style=plastic&logo=slack)](https://slack.cncf.io/)
-
-* Mailing list
-  * [![Mailing list](https://img.shields.io/badge/Mailing%20List-networkservicemesh-blue.svg?style=plastic")](https://groups.google.com/forum/#!forum/networkservicemesh)
-
-* CNCF Code of Conduct
-  * The Network Service Mesh community follows the [CNCF Community Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
-
-## Upcoming events
-
-Please see our [events on our homepage](https://networkservicemesh.io/events)
-
-## References
-
-* [Official Website](https://www.networkservicemesh.io/)
-* [Narrative Introduction](https://docs.google.com/presentation/d/1IC2kLnQGDz1hbeO0rD7Y82O_4NwzgIoGgm0oOXyaQ9Y/edit#slide=id.p) <- Start Here
-  * [Presented to Kubernetes Resource Management Working Group](https://www.youtube.com/watch?v=pToCYxp5Kgs)
-* [Intro slides](https://docs.google.com/presentation/d/1C3r91ev0tWnFFUjiV4W84Hp965YGR1D9lChZo73Jwq0/edit#slide=id.g375263091c_1_0)
-* [Intro slides presented](https://www.youtube.com/watch?v=f2FV6C_dSk4)
-* [HW Interfaces](https://drive.google.com/open?id=1_nwt1tTy-RWYHDj70-2g6g7OvBuuyGpCbyEREjdZkNU)
-* [Distributed CNFs (Distributed Bridges)](https://drive.google.com/open?id=1j78oj_5bJ23dydFT-FTrMwlSrMkHPGC70qmjQzQRPJ4)
-* [VPN Gateway](https://docs.google.com/presentation/d/1BnouS8d_Aesq9IPRPWRxTcZR1ZtmULcyh6l0gAK204Q/edit#slide=id.p)
-* [Presentation to Kubernetes SIG Networking 2018-05-31](https://docs.google.com/presentation/d/1vmN5EevNccel6Wt8KgmkXhAfnjIli4IbjskezQjyfUE/edit#slide=id.p)
-* [Use Case Working Document](https://drive.google.com/open?id=1bIK_SF8lnP1IrZQUIj4eAuDyibSI6tpMvE_bF3RKSCk)
-* [Google Drive Folder](https://drive.google.com/drive/folders/1f5fek-PLvoycMTCp6c-Dn_d9_sBNTfag) - where most of the NSM docs are located. Keep in mind that some of them are still Work in Progress.
-
-## FAQ
-
-If you run into problems, check the [docs](/docs/README.md) and feel free to post issues in the [Network Service Mesh](https://github.com/networkservicemesh/networkservicemesh/issues) repository.
 
 ## Licence
 
