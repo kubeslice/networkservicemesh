@@ -16,6 +16,6 @@ RUN VENDORING=${VENDORING} ../scripts/go-mod-download.sh
 
 RUN CGO_ENABLED=0 GOOS=linux go build ${VENDORING} -ldflags "-extldflags '-static' -X  main.version=${VERSION}" -o /go/bin/nsmd ./cmd/nsmd
 
-FROM alpine as runtime
+FROM alpine:3.16.2 as runtime
 COPY --from=build /go/bin/nsmd /bin/nsmd
 ENTRYPOINT ["/bin/nsmd"]

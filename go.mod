@@ -54,6 +54,7 @@ replace (
 
 require (
 	github.com/alessio/shellescape v1.2.2 // indirect
+	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de // indirect
 	github.com/networkservicemesh/networkservicemesh/forwarder v0.0.0-00010101000000-000000000000 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/cobra v1.0.0 // indirect
