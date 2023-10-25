@@ -4,7 +4,8 @@ go 1.13
 
 require (
 	github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
-	github.com/golang/protobuf v1.3.3
+	github.com/golang/protobuf v1.5.3
+	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/networkservicemesh/networkservicemesh/controlplane/api v0.3.0
 	github.com/networkservicemesh/networkservicemesh/forwarder/api v0.3.0
 	github.com/networkservicemesh/networkservicemesh/pkg v0.3.0
@@ -19,7 +20,7 @@ require (
 	go.ligato.io/vpp-agent/v3 v3.1.0
 	golang.zx2c4.com/wireguard v0.0.20200121
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20200114203027-fcfc50b29cbb
-	google.golang.org/grpc v1.27.1
+	google.golang.org/grpc v1.56.3
 )
 
 replace github.com/census-instrumentation/opencensus-proto v0.1.0-0.20181214143942-ba49f56771b8 => github.com/census-instrumentation/opencensus-proto v0.0.3-0.20181214143942-ba49f56771b8
