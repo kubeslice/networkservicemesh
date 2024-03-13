@@ -16,17 +16,17 @@
 
 Network Service Mesh (NSM) is a novel approach solving complicated L2/L3 use cases in Kubernetes that are tricky to address with the existing Kubernetes Network Model. Inspired by Istio, Network Service Mesh maps the concept of a Service Mesh to L2/L3 payloads as part of an attempt to re-imagine NFV in a Cloud-native way!
 
-For more information, have a look at our detailed overview of NSM - [What is NSM?](/docs/what-is-nsm.md)
+For more information, have a look at our detailed overview of NSM - [What is NSM?](https://kubeslice.io/documentation/open-source/1.2.0/overview/components#network-service-mesh-control-and-data-plane).
 
 ## Getting started
 
-To get started, follow our [Quick Start](/docs/guide-quickstart.md) guide.
+To get started, follow our [Sandbox](https://kubeslice.io/documentation/open-source/1.2.0/playground/sandbox) guide.
 
-If you want a more extensive look, you can follow the slightly more detailed [Build](/docs/guide-build.md) page.
+If you want a more extensive look, you can refer to [more details](https://kubeslice.io/documentation/open-source).
 
 ## Docs
 
-See our full documentation at the [docs](/docs/README.md) folder.
+See our full documentation at the [KubeSlice OSS docs](https://kubeslice.io/documentation/open-source).
 
 
 ## Licence
