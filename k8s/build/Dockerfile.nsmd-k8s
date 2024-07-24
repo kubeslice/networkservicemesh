@@ -15,6 +15,6 @@ WORKDIR /root/networkservicemesh/k8s
 RUN VENDORING=${VENDORING} ../scripts/go-mod-download.sh
 
 RUN CGO_ENABLED=0 GOOS=linux go build ${VENDORING} -ldflags "-extldflags '-static' -X  main.version=${VERSION}" -o /go/bin/nsmd-k8s ./cmd/nsmd-k8s
-FROM alpine:3.16.2 as runtime
+FROM alpine:3.19 as runtime
 COPY --from=build /go/bin/nsmd-k8s /bin/nsmd-k8s
 ENTRYPOINT ["/bin/nsmd-k8s"]
