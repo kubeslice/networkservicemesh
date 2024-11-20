@@ -3,7 +3,7 @@ module github.com/networkservicemesh/networkservicemesh/k8s
 go 1.13
 
 require (
-	github.com/golang/protobuf v1.3.3
+	github.com/golang/protobuf v1.5.3
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/networkservicemesh/networkservicemesh/controlplane v0.3.0
@@ -15,9 +15,8 @@ require (
 	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.4.2
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
-	google.golang.org/appengine v1.6.1 // indirect
-	google.golang.org/grpc v1.27.1
+	golang.org/x/net v0.9.0
+	google.golang.org/grpc v1.56.3
 	k8s.io/api v0.18.1
 	k8s.io/apimachinery v0.18.1
 	k8s.io/client-go v11.0.0+incompatible
