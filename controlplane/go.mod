@@ -3,7 +3,7 @@ module github.com/networkservicemesh/networkservicemesh/controlplane
 go 1.13
 
 require (
-	github.com/golang/protobuf v1.3.3
+	github.com/golang/protobuf v1.5.3
 	github.com/networkservicemesh/networkservicemesh/controlplane/api v0.3.0
 	github.com/networkservicemesh/networkservicemesh/forwarder/api v0.3.0
 	github.com/networkservicemesh/networkservicemesh/pkg v0.3.0
@@ -14,10 +14,10 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.0
 	github.com/sirupsen/logrus v1.4.2
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
-	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9
+	golang.org/x/net v0.9.0
+	golang.org/x/sys v0.7.0
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20200114203027-fcfc50b29cbb
-	google.golang.org/grpc v1.27.1
+	google.golang.org/grpc v1.56.3
 )
 
 replace github.com/census-instrumentation/opencensus-proto v0.1.0-0.20181214143942-ba49f56771b8 => github.com/census-instrumentation/opencensus-proto v0.0.3-0.20181214143942-ba49f56771b8
